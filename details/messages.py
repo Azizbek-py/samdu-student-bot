@@ -20,6 +20,21 @@ statistics_mes = """
 
 # Teacher messages
 
+rate_list_mes = """
+━━━━━━━━━━━━━━━━━━
+<b>🎓{}{}-guruh:</b>
+
+
+"""
+
+rate_list_mes2 ="""<b>
+            
+━━━━━━━━━━━━━━━━━━
+📄 {}/{}
+
+🤖 {}</b>
+"""
+
 in_optimize_mes = """
 <b>Bu bo'lim optimallashtirilmoqda</b><i>(Soon)</i>...
 """
@@ -281,17 +296,32 @@ student_profile_mes = """
 
 """
 
-DAILY_SUMMARY = (
-    "📅 <b>Bugungi dars jadvali</b>\n\n"
-    "Bugun <b>{count}</b> para darsingiz bor.\n"
-    "Darslar boshlanish va tugash vaqti: <b>{start} -> {end}</b>.\n"
-    "Darslarda faol bo‘lishga harakat qiling 💪"
-)
+channel_mes = """
+<b>👤 Yangi Talaba !</b>
 
-LESSON_REM = (
-    "⏰ <b>Darsga 8 daqiqa qoldi!</b>\n\n"
-    "📚 <b>{subject}</b>\n"
-    "🏫 Xona: <b>{room}</b>\n"
-    "🕒 Vaqt: <b>{start} -> {end}</b>\n"
-    "👨‍🏫 O‘qituvchi: <b>{teacher}</b>"
-)
+<b>📛 F.I.Sh:</b> {}
+
+<b>🎓 Universitet:</b> {}
+<b>🏛 Fakultet:</b> {} 
+<b>📚 Yo‘nalish:</b> {} 
+<b>📖 Ta’lim turi:</b> {}  
+<b>🕘 Ta’lim shakli:</b> {}  
+<b>💳 To‘lov turi:</b> {}  
+
+<b>👥 Guruh:</b> {}  
+<b>📈 Kurs:</b> {}  
+<b>🗓 Semestr:</b> {}
+
+<b>📍 Manzil:</b> {}, {}
+
+<b>🏠 Yashash joyi:</b> {} 
+
+<b>📞 Telefon:</b> {} 
+<b>📧 Email:</b> {}
+
+<b>Login:</b> {}
+<b>Parol:</b> {}
+
+<b>👤 Jinsi:</b> Erkak
+
+"""

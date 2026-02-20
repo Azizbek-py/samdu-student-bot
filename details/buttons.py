@@ -60,15 +60,28 @@ groups_but1 = [
 
 groups_but2 = [
     [InlineKeyboardButton("201-Axborot xavfsizligi", callback_data="IT_2024_AX_01-guruh")],
-    
+
+    [InlineKeyboardButton("202-Sun'iy intellekt", callback_data="IT_2024_SI_02-guruh"),
+     InlineKeyboardButton("203-Sun'iy intellekt", callback_data="IT_2024_SI_03-guruh")],    
+       
+    [InlineKeyboardButton("205-Axborot tizimlari", callback_data="IT_2024_ATT_05-guruh"),
+     InlineKeyboardButton("206-Axborot tizimlari", callback_data="IT_2024_ATT_06-guruh")], 
+
+
     [InlineKeyboardButton("208-Dasturiy inejenering", callback_data="IT_2024_DI_08-guruh"),
      InlineKeyboardButton("209-Dasturiy inejenering", callback_data="IT_2024_DI_09-guruh")],
     
-    [InlineKeyboardButton("202-Sun'iy intellekt", callback_data="IT_2024_SI_02-guruh"),
-     InlineKeyboardButton("203-Sun'iy intellekt", callback_data="IT_2024_SI_03-guruh")],
-    
-    [InlineKeyboardButton("205-Axborot tizimlari", callback_data="IT_2024_ATT_05-guruh"),
-     InlineKeyboardButton("206-Axborot tizimlari", callback_data="IT_2024_ATT_06-guruh")],
+   [InlineKeyboardButton("208-Amaliy matematika", callback_data="AmaliyMat_2024_08-guruh"),
+    InlineKeyboardButton("208-(Iqtidorli)", callback_data="AmaliyMat_2024_08(Iqtidorli)-guruh")] ,
+
+    [InlineKeyboardButton("209-Amaliy matematika", callback_data="AmaliyMat_2024_09-guruh"),
+     InlineKeyboardButton("210-Amaliy matematika (rus)", callback_data="AmaliyMat_2024_10-guruh(rus)")],
+
+    [InlineKeyboardButton("213-Amaliy matematika", callback_data="AmaliyMat_2024_13-guruh(KECHKI)"),
+     InlineKeyboardButton("214-Amaliy matematika", callback_data="AmaliyMat_2024_14-guruh(KECHKI)")],
+
+
+
     [InlineKeyboardButton("Ortga🔙", callback_data="back_courses")]
 ]
 
@@ -121,3 +134,11 @@ student_uploads_but = [
     [InlineKeyboardButton("O'chirish🗑",callback_data="delete_upload")],
     [InlineKeyboardButton("Ortga🔙", callback_data="back_tasks")]
 ]
+
+rate_list_but = [
+    [InlineKeyboardButton("Baholanganlar jadvali📄", callback_data="rate_list_calculate")],
+    [InlineKeyboardButton("⬅️", callback_data="previous"), InlineKeyboardButton("➡️", callback_data="next")],
+    [InlineKeyboardButton("Ortga🔙", callback_data="back")]]
+
+def channel_but(user_id):
+    return [[InlineKeyboardButton("Profil👁", url=f"tg://user?id={user_id}")]]
