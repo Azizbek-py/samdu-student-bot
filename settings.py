@@ -8,6 +8,7 @@ ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 BOT_USERNAME = os.getenv("BOT_USERNAME", "@SamDU_Talaba_Bot")
 START_DATE = os.getenv("START_DATE", "15.02.2026")
 DEVELOPER = os.getenv("DEVELOPER", "@BroAZIK")
+CHANNEL_ID = os.getenv("CHANNEL_ID", 0)
 
 ATTEND_LIMIT = int(os.getenv("ATTEND_LIMIT", "3"))
 
