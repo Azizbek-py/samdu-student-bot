@@ -769,7 +769,10 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 msg = await update.message.reply_text(
                     text=no_teachers_tasks_mes,
                     reply_markup=ReplyKeyboardMarkup(TEACHER_start_but, resize_keyboard=True)
-                )
+                )             
+                context.user_data.setdefault("messages", []).append(update.message.id)
+                await log_deleter(user_id=user_id, type="messages", context=context)
+                context.user_data.setdefault("messages", []).append(msg.message_id)
                 return
             uniq_id = tasks_list[index]["uniq_id"]
             uploads = get_student_uploads(uniq_id=uniq_id)
