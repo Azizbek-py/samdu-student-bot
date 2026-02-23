@@ -37,6 +37,7 @@ async def log_channel(photo, message, user_id):
         )
 async def log_deleter(user_id, type, context):
     messages = context.user_data.get(type, [])
+    messages+= context.user_data.get("messagess", [])
     cache = get(table="users", user_id=str(user_id))
     try:
         for ids in cache["context_cache"]:
@@ -847,7 +848,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     index = 0
             upd(table="users", user_id=user_id, data={"index": index})
             teacher = teachers[index]
-            print(teacher)
             try:
                 await query.edit_message_text(
                     text=Teacher_list_mes.format(
@@ -869,8 +869,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         teacher.get("subject_name", "")),
                         reply_markup=query.message.reply_markup
                 )
-                print("edit_message_text BadRequest:", e)
-            
+                
             return
 
     if user['role'] == 'teacher':
@@ -1572,16 +1571,16 @@ async def document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             })
 
             upd(table="users", data={"stage":"start"}, user_id=user_id)
-            
+            context.user_data.setdefault("messages", []).append(update.message.message_id)            
             messages = context.user_data.get("messages", [])
-            context.user_data.setdefault("messages", []).append(update.message.message_id)
-            context.user_data.setdefault("messages", []).append(msg.message_id)
+
             for msg_id in messages:
                 try:
                     await bot.delete_message(chat_id=user_id, message_id=msg_id)
                 except:
                     pass
-            
+
+            context.user_data.setdefault("messagess", []).append(msg.message_id)
             return
     
     if user['role'] == "user":
