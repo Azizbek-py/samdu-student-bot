@@ -1147,9 +1147,11 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if not tasks_list:
                     await query.delete_message()
                     msg = await query.message.reply_text(
-                        text=USER_welcome_mes.format(first_name=user['first_name']),
+                        text=main_menu_mes,
                         reply_markup=ReplyKeyboardMarkup(TEACHER_start_but, resize_keyboard=True)
                     )
+                    log_deleter(user_id=user_id, type="messages", context=context)
+                    context.user_data.setdefault("messagess", []).append(msg.message_id)
                     upd(table="users", data={"stage":"start"}, user_id=user_id)
                     return
                 uniq_id = tasks_list[index]["uniq_id"]
