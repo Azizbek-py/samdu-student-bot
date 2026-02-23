@@ -1148,9 +1148,10 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await query.delete_message()
                     msg = await query.message.reply_text(
                         text=main_menu_mes,
+                        parse_mode=ParseMode.HTML,
                         reply_markup=ReplyKeyboardMarkup(TEACHER_start_but, resize_keyboard=True)
                     )
-                    log_deleter(user_id=user_id, type="messages", context=context)
+                    await log_deleter(user_id=user_id, type="messages", context=context)
                     context.user_data.setdefault("messagess", []).append(msg.message_id)
                     upd(table="users", data={"stage":"start"}, user_id=user_id)
                     return
