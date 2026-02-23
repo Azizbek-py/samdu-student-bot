@@ -7,6 +7,7 @@ from telegram.ext import (
     CallbackQueryHandler,
     ContextTypes
 )
+from telegram.error import BadRequest
 from settings import *
 from details.database.db import *
 from .messages import *
@@ -19,14 +20,21 @@ UZ_TZ = timezone(timedelta(hours=5))
 bot = Bot(token=BOT_TOKEN)
 
 async def log_channel(photo, message, user_id):
-    await bot.send_photo(
-        chat_id=CHANNEL_ID,
-        photo=photo,
-        caption=message,
-        reply_markup=InlineKeyboardMarkup(channel_but(user_id)),
-        parse_mode=ParseMode.HTML
-    )
-
+    try:
+        await bot.send_photo(
+            chat_id=CHANNEL_ID,
+            photo=photo,
+            caption=message,
+            reply_markup=InlineKeyboardMarkup(channel_but(user_id)),
+            parse_mode=ParseMode.HTML
+        )
+    except:
+        await bot.send_photo(
+            chat_id=CHANNEL_ID,
+            photo=photo,
+            caption=message,
+            parse_mode=ParseMode.HTML
+        )
 async def log_deleter(user_id, type, context):
     messages = context.user_data.get(type, [])
     cache = get(table="users", user_id=str(user_id))
@@ -825,19 +833,32 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     index += 1
                 else:
                     index = 0
-
+            upd(table="users", user_id=user_id, data={"index": index})
             teacher = teachers[index]
-
-            await query.edit_message_text(
-                text=Teacher_list_mes.format(
-                    index+1,
-                    len(teachers),
-                    teacher.get("full_name", ""),
-                    teacher.get("id", 0),
-                    teacher.get("subject_name", "")
-                ),
-                reply_markup=InlineKeyboardMarkup(teach_list_but(teacher.get("id")))
-            )
+            print(teacher)
+            try:
+                await query.edit_message_text(
+                    text=Teacher_list_mes.format(
+                        index+1,
+                        len(teachers),
+                        teacher.get("full_name", ""),
+                        teacher.get("id", 0),
+                        teacher.get("subject_name", "")
+                    ),
+                    reply_markup=InlineKeyboardMarkup(teach_list_but(int(teacher.get("id", 0))))
+                )
+            except BadRequest as e:
+                await query.edit_message_text(
+                    text=Teacher_list_mes.format(
+                        index+1,
+                        len(teachers),
+                        teacher.get("full_name", ""),
+                        teacher.get("id", 0),
+                        teacher.get("subject_name", "")),
+                        reply_markup=query.message.reply_markup
+                )
+                print("edit_message_text BadRequest:", e)
+            
             return
 
     if user['role'] == 'teacher':
