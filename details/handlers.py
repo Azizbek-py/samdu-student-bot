@@ -1572,8 +1572,9 @@ async def document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             })
 
             upd(table="users", data={"stage":"start"}, user_id=user_id)
-            context.user_data.setdefault("messages", []).append(update.message.message_id)
+            
             messages = context.user_data.get("messages", [])
+            context.user_data.setdefault("messages", []).append(update.message.message_id)
             context.user_data.setdefault("messages", []).append(msg.message_id)
             for msg_id in messages:
                 try:
