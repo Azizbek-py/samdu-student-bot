@@ -372,16 +372,28 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text("Hali teacher yo'q")
                 return
             
-            await update.message.reply_text(
-                text=Teacher_list_mes.format(
-                    index+1,
-                    len(teachers),
-                    teacher.get("full_name", ""),
-                    teacher.get("id", 0),
-                    teacher.get("subject_name", "")
-                ),
-                reply_markup=InlineKeyboardMarkup(teach_list_but(teacher.get("id")))
-            )
+            try:
+                await update.message.reply_text(
+                    text=Teacher_list_mes.format(
+                        index+1,
+                        len(teachers),
+                        teacher.get("full_name", ""),
+                        teacher.get("id", 0),
+                        teacher.get("subject_name", "")
+                    ),
+                    reply_markup=InlineKeyboardMarkup(teach_list_but(teacher.get("id")))
+                )
+            except BadRequest as e:
+                await update.message.reply_text(
+                    text=Teacher_list_mes.format(
+                        index+1,
+                        len(teachers),
+                        teacher.get("full_name", ""),
+                        teacher.get("id", 0),
+                        teacher.get("subject_name", "")
+                    ),
+                    reply_markup=InlineKeyboardMarkup(teach_list_but(ADMIN_ID))
+                )
             return
 
         if message ==  "Remove Teacher":
