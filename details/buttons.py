@@ -13,6 +13,7 @@ def teach_upload_but(user_id):
 def teach_list_but(user_id):
     but = [
             [InlineKeyboardButton("Domla👁‍🗨", url = f"tg://user?id={user_id}")],
+            [InlineKeyboardButton("Fan qo'shish", callback_data="add_subject")],
         [InlineKeyboardButton("⬅️", callback_data="prev_teach"), InlineKeyboardButton("➡️", callback_data="next_teach")]]
     
     return but

@@ -287,6 +287,7 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if user_id == ADMIN_ID:
 
+
         if message == "Get bases":
 
             files = [
@@ -344,7 +345,7 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             upd(
                 table="users",
                 data={
-                    "subject_name": subject_name
+                    "subject_name": [subject_name]
                 },
                 user_id=teacher_id
             )
@@ -360,7 +361,17 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             upd(table="users", data={"stage":"start", "teacher_id": 0}, user_id=user_id)
             return
 
-        if message == "Teachers list":
+        if message == "Teachers list" or stage == "new_subject":
+            if stage == "new_subject":
+                teach_id = get(table="users", user_id=user_id)['subject_id']
+                old_subject = get(table="users", user_id=teach_id)['subject_name']
+                new_subject = old_subject.append(message)
+                print(old_subject)
+                print(new_subject)
+                upd(table='users', user_id=int(teach_id), data={"subject_name": old_subject})
+                upd(table="users", user_id=user_id, data={"stage": "start", "teacher_id": 0})
+                await log_deleter(type="log_subject", user_id=user_id, context=context)
+
             teachers = []
             for user in get(table="users"):
                 if user["role"] == "teacher":
@@ -635,7 +646,6 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             rate = get(table="users", user_id=user_id).get("rate", 0)
             subject = message
             tasks = get_students_tasks(group=group, subject=subject)
-            
 
 
             if len(tasks) == 0:
@@ -703,7 +713,7 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 student = []
             
-            n_msg = await bot.send_message(chat_id=upload['from_user']['user_id'], text=you_have_rate_mes.format(user.get("subject_name"), rate), parse_mode=ParseMode.HTML)
+            n_msg = await bot.send_message(chat_id=upload['from_user']['user_id'], text=you_have_rate_mes.format(upload.get("subject"), rate), parse_mode=ParseMode.HTML)
             student.append(n_msg.message_id)
             upd(table="users", user_id=upload['from_user']['user_id'], data={"context_cache": student})
 
@@ -788,7 +798,6 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         task['caption'],
                         task['course_number'],
                         task["group_data"].split("_")[3],
-                        task['from_teacher']['subject_name'],
                         len(uploads),
                         index+1,
                         len(tasks_list),
@@ -874,6 +883,16 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
                 
             return
+
+        if query.data == "add_subject":
+            msg_text = query.message.text
+            ids = msg_text.split("id: ")[1].split("\n")[0]
+            upd(table="users", user_id=user_id, data={"stage": "new_subject","subject_id": ids})
+
+            msg = await query.message.reply_text(
+                text=get_next_subject_mes
+            )
+            context.user_data.setdefault("log_subject", []).append(msg.message_id)
 
     if user['role'] == 'teacher':
         messages = context.user_data.get("rate_log", [])
@@ -1000,7 +1019,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         task['caption'],
                         task['course_number'],
                         task["group_data"].split("_")[3],
-                        subject,
                         len(uploads),
                         user.get("index") + 1,
                         len(tasks),
@@ -1041,7 +1059,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         task['caption'],
                         task['course_number'],
                         task["group_data"].split("_")[3],
-                        subject,
                         len(uploads),
                         index+1,
                         len(tasks),
@@ -1175,7 +1192,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             tasks_list[index]["caption"],
                             tasks_list[index]["course_number"],
                             tasks_list[index]["group_data"].split("_")[3],
-                            tasks_list[index]['from_teacher']['subject_name'],
                             len(uploads),
                             index + 1,
                             len(tasks_list),
@@ -1218,7 +1234,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             tasks_list[index]["caption"],
                             tasks_list[index]["course_number"],
                             tasks_list[index]["group_data"].split("_")[3],
-                            task['from_teacher']['subject_name'],
                             len(uploads),
                             index + 1,
                             len(tasks_list),
@@ -1285,7 +1300,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         task.get("caption"),
                         task['course_number'],
                         task["group_data"].split("_")[3],
-                        task['from_teacher']['subject_name'],
                         len(uploads),
                         index+1,
                         len(tasks),

@@ -74,8 +74,6 @@ teacher_tasks_mes = """
 
 🎓 <b>{}{}-guruh</b>
 
-📚 <b>{}</b>
-
 👥 Bajargan talabalar: <b>{} ta</b>
 
 ━━━━━━━━━━━━━━━━━━
@@ -123,6 +121,10 @@ invalid_rate_mes = """
 
 # Admin messages
 
+get_next_subject_mes = "Qo'shimcha fanni kiriting: "
+
+subject_added_mes = "Domlaga {} fani qo'shildi"
+
 ADMIN_welcome_mes = "Siz tizim Adminisiz!"
 
 get_teacher_id_mes = "Iltimos, o'qituvchining ID raqamini yuboring:"
@@ -149,8 +151,8 @@ Teacher_list_mes = """
 No:{}/{}
 {} domla
 
-Fani: {}
 id: {}
+Fani: {}
 
 ------------------------
 """
