@@ -120,5 +120,9 @@ def upd(table, data, user_id=None):
 def delete(table, user_id=None):
     if table == "users":
         users.remove(doc_ids=[user_id])
+        try:
+            tasks.remove(Query().own_of_file == user_id)
+        except:
+            pass
     if table == "tasks":
         tasks.remove(Query().uniq_id == user_id)
