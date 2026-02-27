@@ -35,8 +35,10 @@ def get_students_tasks(subject, group=None):
             filtered = []
 
             for task in tasks_list:
-                if task["from_teacher"]["subject_name"] in str(subject):
-                    filtered.append(task)
+                for name in task["from_teacher"]["subject_name"]:
+                    if name in str(subject):
+                        if task not in filtered:
+                            filtered.append(task)
             return filtered
         except:
             return None
